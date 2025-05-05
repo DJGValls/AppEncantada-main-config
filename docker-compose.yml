@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+    mysql:
+        image: mysql:8
+        container_name: appEncantada-db
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: 1234
+            MYSQL_DATABASE: appEncantada
+            MYSQL_USER: admin
+            MYSQL_PASSWORD: 1234
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+    backend:
+        build: ./src/appEncantada-API
+        container_name: backend-app
+        depends_on:
+            - mysql
+        environment:
+            DB_HOST: mysql
+            DB_PORT: 3306
+            DB_NAME: appEncantada
+            DB_USER: admin
+            DB_PASSWORD: 1234
+            # Otras variables que tu backend necesite
+        ports:
+            - "4000:4000"
+        volumes:
+            - ./src/appEncantada-API:/app
+        command: npm run dev # Ajusta según el script de desarrollo o producción
+    frontend:
+        build: ./src/appEncantada-WEB
+        container_name: frontend-app
+        depends_on:
+            - backend
+        environment:
+            API_URL: "http://backend-app:4000" # O la URL que corresponda
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./src/appEncantada-WEB:/app
+        command: npm run dev # O el comando que corresponda para Next.js
+volumes:
+    mysql_data:
